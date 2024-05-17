@@ -102,5 +102,7 @@
 - 풍부한 단위 테스트 & 큰 기능 단위를 검증하는 통합 테스트
  
 ## Mock
+https://site.mockito.org
+
 ### MockMvc
 Mock(가짜) 객체를 사용해 스프링 MVC 동작을 재현할 수 있는 프레임워크

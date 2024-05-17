@@ -3,6 +3,7 @@ package wh.duckbill.cafekiosk.spring.api.service.order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import wh.duckbill.cafekiosk.spring.api.controller.order.request.OrderCreateRequest;
+import wh.duckbill.cafekiosk.spring.api.service.order.request.OrderCreateServiceRequest;
 import wh.duckbill.cafekiosk.spring.api.service.order.response.OrderResponse;
 import wh.duckbill.cafekiosk.spring.domain.order.Order;
 import wh.duckbill.cafekiosk.spring.domain.order.OrderRepository;
@@ -29,7 +30,7 @@ public class OrderService {
      * 재고 감소 -> 동시성 고민 (동시에 차감 요청이 왔을때)
      * optimistic lock / pessimistic lock
      */
-    public OrderResponse createOrder(OrderCreateRequest request, LocalDateTime registeredDateTime) {
+    public OrderResponse createOrder(OrderCreateServiceRequest request, LocalDateTime registeredDateTime) {
         List<String> productNumbers = request.getProductNumbers();
         List<Product> products = findProductBy(productNumbers);
 
