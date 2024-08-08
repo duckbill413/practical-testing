@@ -37,6 +37,7 @@
   - 외부 세상과 단절된 형태
   - 테스트하기 쉬운 코드
 
+---
 ## Test Driven Development (TDD)
 - 프로덕션 코드보다 테스트 코드를 먼저 작성하여 테스트가 구현 과정을 주도하도록 하는 방법론
 - `RED -> GREEN -> REFACTOR` -> RED Cycle
@@ -57,8 +58,15 @@
   - 구현에 대한 빠른 피드백을 받을 수 있다.
   - 과감한 리팩토링이 가능해진다.
 
+### TDD: 관점의 변화
+- BEFORE: 테스트는 구현부 검증을 위한 보조 수단
+- AFTER: 테스트와 상호 작용하며 발전하는 구현부
+- 클라이언트 관점에서의 피드백을 주는 Test Driven
 
-- TDD: 관점의 변화
-  - BEFORE: 테스트는 구현부 검증을 위한 보조 수단
-  - AFTER: 테스트와 상호 작용하며 발전하는 구현부
-  - 클라이언트 관점에서의 피드백을 주는 Test Driven
+
+### 키워드 정리
+- TDD
+- RED -> GREEN -> REFACTOR Cycle
+- 애자일(Agile) 방법론 vs. 폭포수 방법론
+- 익스트림 프로그래밍 (XP, eXtreme Programming)
+- 스크럼(Scrum), 칸반(kanban)
