@@ -8,12 +8,12 @@ import wh.duckbill.cafekiosk.spring.domain.product.ProductType;
 
 @Getter
 public class ProductResponse {
-    private Long id;
-    private String productNumber;
-    private ProductType type;
-    private ProductSellingStatus sellingStatus;
-    private String name;
-    private int price;
+    private final Long id;
+    private final String productNumber;
+    private final ProductType type;
+    private final ProductSellingStatus sellingStatus;
+    private final String name;
+    private final int price;
 
     @Builder
     private ProductResponse(Long id, String productNumber, ProductType type, ProductSellingStatus sellingStatus, String name, int price) {
