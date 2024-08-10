@@ -60,13 +60,13 @@
 
 ### 키워드 정리
 - TDD
-- RED -> GREEN -> REFACTOR Cycle
+- `RED -> GREEN -> REFACTOR` Cycle
 - 애자일(Agile) 방법론 vs. 폭포수 방법론
 - 익스트림 프로그래밍 (XP, eXtreme Programming)
 - 스크럼(Scrum), 칸반(kanban)
 
 ---
-# 테스트는 [ ]다.
+# [섹션 #4] 테스트는 [ ]다.
 ### DisplayName 을 섬세하게
 - 명사의 나열보다 문장으로 (`다.` 로 끝나게)
 - 테스트 행위에 대한 결과까지 기술하기
@@ -89,3 +89,14 @@
 - TDD vs. BDD
 - JUnit vs Spock
   - Spock: Given / When / Then 을 나눈 BDD Framework
+
+# [섹션 #5] Spring & JPA 기반 테스트
+## Layered Architecture
+관심사의 분리
+
+`User ⇔ Presentation ⇔ Business ⇔ Persistence ⇔ Data`
+
+### 통합 테스트
+- 여러 모듈이 협력하는 기능을 통합적으로 검증하는 테스트
+- 일반적으로 작은 범위의 단위 테스트만으로는 기능 전체의 신뢰성을 보장할 수 없음
+- 풍부한 단위 테스트 & 큰 기능 단위를 검증하는 통합 테스트
