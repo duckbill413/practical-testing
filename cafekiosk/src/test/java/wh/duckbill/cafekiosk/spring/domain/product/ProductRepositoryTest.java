@@ -13,7 +13,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 @ActiveProfiles("test")
 //@SpringBootTest
-@DataJpaTest
+@DataJpaTest // @Transactional 이 달려있어 자동으로 Rollback 됨
 class ProductRepositoryTest {
     @Autowired
     private ProductRepository productRepository;
