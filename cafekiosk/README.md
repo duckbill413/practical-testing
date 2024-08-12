@@ -160,3 +160,5 @@ Hexagonal Architecture는 애플리케이션의 핵심 비즈니스 로직을 �
 - 의존성: Layered Architecture는 계층 간의 상하 의존성이 있지만, Hexagonal Architecture는 의존성을 역전시켜 외부 시스템이 Core를 참조하도록 설계됩니다.
 - 유연성: Hexagonal Architecture는 외부 시스템과의 독립성을 강조하므로 변화에 더 유연하게 대처할 수 있습니다.
 - 테스트 용이성: Hexagonal Architecture는 Core와 외부 시스템이 분리되어 있으므로, Core를 독립적으로 테스트하기가 더 쉽습니다.
+
+# [섹션 #6] Mock 을 마주하는 자세

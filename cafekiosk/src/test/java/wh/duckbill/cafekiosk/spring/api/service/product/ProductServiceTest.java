@@ -64,7 +64,7 @@ class ProductServiceTest {
 
     }
 
-    @DisplayName("상품이 하나도 없는 경우 신규 상품을 등록하면 상품번호는 001이다.")
+    @DisplayName("상품이 하나도 없는 경우 신규 상품을 등록하면 상품번호는 001 이다.")
     @Test
     void createProductWhenProductsIsEmpty() {
         // given

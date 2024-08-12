@@ -2,6 +2,7 @@ package wh.duckbill.cafekiosk.spring.domain.order;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import wh.duckbill.cafekiosk.spring.domain.BaseEntity;
@@ -11,7 +12,6 @@ import wh.duckbill.cafekiosk.spring.domain.product.Product;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -32,13 +32,12 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
-    public Order(List<Product> products, LocalDateTime registeredDateTime) {
-        this.orderStatus = OrderStatus.INIT;
+    @Builder
+    public Order(List<Product> products, OrderStatus orderStatus, LocalDateTime registeredDateTime) {
+        this.orderStatus = orderStatus;
         this.totalPrice = calculateTotalPrice(products);
         this.registeredDateTime = registeredDateTime;
-        this.orderProducts = products.stream()
-                .map(product -> new OrderProduct(this, product))
-                .collect(Collectors.toList());
+        this.orderProducts = products.stream().map(product -> new OrderProduct(this, product)).toList();
     }
 
     private int calculateTotalPrice(List<Product> products) {
@@ -46,7 +45,11 @@ public class Order extends BaseEntity {
     }
 
     public static Order create(List<Product> products, LocalDateTime registeredDateTime) {
-        return new Order(products, registeredDateTime);
+        return Order.builder()
+                .orderStatus(OrderStatus.INIT)
+                .products(products)
+                .registeredDateTime(registeredDateTime)
+                .build();
     }
 }
 
