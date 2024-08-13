@@ -162,3 +162,29 @@ Hexagonal Architecture는 애플리케이션의 핵심 비즈니스 로직을 �
 - 테스트 용이성: Hexagonal Architecture는 Core와 외부 시스템이 분리되어 있으므로, Core를 독립적으로 테스트하기가 더 쉽습니다.
 
 # [섹션 #6] Mock 을 마주하는 자세
+
+### Mockito Stubbing
+- Mock 을 이용하여 외부 통신이나 DB 연결 등의 작업을 수행  
+- MockMvc의 `when` -> `thenReturn`
+- 외부와의 연결 없이도 테스트가 가능해 짐
+
+### Test Double
+- **Dummy**
+  - 아무 것도 하지 않는 깡통 객체
+- **Fake**
+  - 단순한 형태로 동일한 기능은 수행하나, 프로덕션에서 쓰기에는 부족한 객체
+  - `FakeRepository`
+- **Stub**
+  - 테스트에서 요청한 것에 대해 미리 준비한 결과를 제공하는 객체 그 외에는 응답하지 않는다.
+- **Spy**
+  - Stub 이면서 호출된 내용을 기록하여 보여줄 수 있는 객체
+  - 일부는 실제 객체처럼 동작시키고 일부만 Stubbing 할 수 있다.
+- **Mock**
+  - 행위에 대한 기대를 명시하고, 그에 따라 동작하도록 만들어진 객체
+
+> Mock 과 Stub의 차이  
+> - [Test Double](https://martinfowler.com/articles/mocksArentStubs.html)
+> - Stub 같은 경우는 어떤 기능을 요청했을 떄 Stub 의 **상태를 기록 및 검증** 하는데 초점
+> - Mock 은 행위에 대해 검증을 중점
+
+### @Mock, @Spy, @InjectMock
