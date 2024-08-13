@@ -11,4 +11,17 @@ public class MailSendClient {
 
         throw new IllegalArgumentException("메일 전송");
     }
+
+    // 기타 기능을 가진 메서드
+    public void a() {
+        log.info("MailSendClient A");
+    }
+
+    public void b() {
+        log.info("MailSendClient B");
+    }
+
+    public void c() {
+        log.info("MailSendClient C");
+    }
 }
