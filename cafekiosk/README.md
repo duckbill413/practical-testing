@@ -187,4 +187,14 @@ Hexagonal Architecture는 애플리케이션의 핵심 비즈니스 로직을 �
 > - Stub 같은 경우는 어떤 기능을 요청했을 떄 Stub 의 **상태를 기록 및 검증** 하는데 초점
 > - Mock 은 행위에 대해 검증을 중점
 
+
 ### @Mock, @Spy, @InjectMock
+- `@Mock`: `MailServiceMockTest`
+- `@Spy`: `MailServiceSpyTest`
+
+### BDD Mockito
+- `MailServiceBDDMockitoTest`
+
+### Classicist vs. Mockist
+- Classicist 는 최대한 기능을 Mock 하지말고 테스트를 하자는 주의
+- Mockist 는 이미 동작 테스트가 완료된 기능에 대해서는 Mock 을 사용해서 테스트
