@@ -167,9 +167,11 @@ class OrderServiceTest {
         Product product3 = createProduct(HANDMADE, "003", 5000);
         productRepository.saveAll(List.of(product1, product2, product3));
 
-        Stock stock1 = Stock.create("001", 2);
+        Stock stock1 = Stock.create("001", 1); // factoring method 도 지양 권장 순수 생성자로 생성
         Stock stock2 = Stock.create("002", 1);
-        stock1.deductQuantity(1); // TODO
+        // createOrder 테스트를 수행하는데 deductQuantity 라는 다른 로직이 들어감
+        // deductQuantity 메소드에 문제가 생겨 실패한 경우 테스트 주제(createOrder)와 맞지 않는 곳에서 문제가 발생
+//        stock1.deductQuantity(1);
         stockRepository.saveAll(List.of(stock1, stock2));
 
         OrderCreateRequest request = OrderCreateRequest.builder()
