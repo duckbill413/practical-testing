@@ -198,3 +198,119 @@ Hexagonal Architecture는 애플리케이션의 핵심 비즈니스 로직을 �
 ### Classicist vs. Mockist
 - Classicist 는 최대한 기능을 Mock 하지말고 테스트를 하자는 주의
 - Mockist 는 이미 동작 테스트가 완료된 기능에 대해서는 Mock 을 사용해서 테스트
+
+# [섹션 #7] 더 나은 테스트를 작성하기 위한 구체적 조언
+## @ParameterizedTest
+![](https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests)
+
+- 매개변수화된 검정을 사용하면 서로 다른 검정을 여러 번 실행할 수 있습니다
+- Source 로는 `@CsvSource`와 `@MethodSource`가 많이 사용된다.
+
+```java
+@DisplayName("상품 타입이 재고 관련 타입인지 체크한다.")
+@CsvSource({"HANDMADE, false", "BOTTLE, true", "BAKERY, true"})
+@ParameterizedTest
+void containsStockType3(ProductType productType, boolean expected) {
+    // when
+    boolean result = ProductType.containsStockType(productType);
+
+    // then
+    assertThat(result).isEqualTo(expected);
+}
+
+private static Stream<Arguments> provideProductTypesForCheckingStockType() {
+    return Stream.of(
+            Arguments.of(ProductType.HANDMADE, false),
+            Arguments.of(ProductType.BOTTLE, true),
+            Arguments.of(ProductType.BAKERY, true)
+    );
+}
+```
+
+```java
+@DisplayName("상품 타입이 재고 관련 타입인지를 확인한다.")
+@MethodSource("provideProductTypesForCheckingStockType")
+@ParameterizedTest
+void containsStockType4(ProductType productType, boolean expected) {
+    // when
+    boolean result = ProductType.containsStockType(productType);
+
+    // then
+    assertThat(result).isEqualTo(expected);
+}
+```
+
+## @DynamicTest
+- 단계별로 테스트하는 것이 유리할 때 사용할 수 있다.
+
+```java
+@DisplayName("재고 차감 시나리오")
+@TestFactory
+Collection<DynamicTest> stockDeductionDynamicTest() {
+    // given
+    Stock stock = Stock.create("001", 1);
+
+    return List.of(
+            DynamicTest.dynamicTest("재고를 주어진 개수만큼 차감할 수 있다.", () -> {
+                // given
+                int quantity = 1;
+
+                // when
+                stock.deductQuantity(quantity);
+
+                // then
+                assertThat(stock.getQuantity()).isZero();
+            }),
+            DynamicTest.dynamicTest("재고보다 많은 수의 수량으로 차감 시도하는 경우 예외가 발생한다.", () -> {
+                // given
+                int quantity = 1;
+
+                // when, then
+                assertThatThrownBy(() -> stock.deductQuantity(quantity))
+                        .isInstanceOf(IllegalArgumentException.class)
+                        .hasMessage("차감할 재고 수량이 없습니다.");
+            })
+    );
+}
+```
+
+## 환경 통합으로 테스트 비용 감소
+- 테스트 환경이 달라지면 Spring 은 서버를 재시작하게 된다.
+- 서버의 재시작은 곧 시간을 소모한다.
+- 불필요한 서버 재시작을 막기 위해서는 테스트 환경을 통합하는 것이 효과적이다.
+
+### @SpringBootTest 의 통합
+```java
+@ActiveProfiles("test")
+@SpringBootTest
+public abstract class IntegrationTestSupport {
+    @MockBean
+    protected MailSendClient mailSendClient;
+}
+```
+- `@SpringBootTest` 를 사용하는 테스트의 환경을 통합
+- Mock 객체를 사용하는 `@MockBean` 객체 또한 서버 환경을 달라지게 하므로 통합
+- `@DataJpaTest` 는 `@Transaction` 어노테이션을 자동으로 지원하는 등의 장점이 있지만 `@SpringBootTest`는 `@DataJpaTest` 기능을 거의 대부분 포함한다.
+- 따라서, 테스트 환경의 통합을 위해서는 `@DataJpaTest`의 사용을 지양할 필요가 있다.
+
+### @WebMvcTest 의 통합
+- `Controller` Test 를 위해 WebMvcTest 를 활용해 왔다.
+
+```java
+@WebMvcTest(controllers = {
+        OrderController.class,
+        ProductController.class
+})
+public abstract class ControllerTestSupport {
+    @Autowired
+    protected MockMvc mockMvc;
+    @Autowired
+    protected ObjectMapper objectMapper;
+    @MockBean
+    protected OrderService orderService;
+    @MockBean
+    protected ProductService productService;
+}
+```
+- WebMvcTest 의 Controller 가 사용하는 의존성을 공통으로 생성
+- 하위 클래스에서 사용하기 위해 `protected` 가 필수

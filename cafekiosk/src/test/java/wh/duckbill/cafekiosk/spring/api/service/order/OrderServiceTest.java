@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import wh.duckbill.cafekiosk.spring.IntegrationTestSupport;
 import wh.duckbill.cafekiosk.spring.api.controller.order.request.OrderCreateRequest;
 import wh.duckbill.cafekiosk.spring.api.service.order.response.OrderResponse;
 import wh.duckbill.cafekiosk.spring.domain.order.OrderRepository;
@@ -24,11 +25,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 import static wh.duckbill.cafekiosk.spring.domain.product.ProductType.*;
 
-@ActiveProfiles("test")
-//@DataJpaTest
-@Transactional(readOnly = true) // Production 코드에서 Transaction 경계 처리가 되어있지 않아 오류가 발생할 수 있음
-@SpringBootTest
-class OrderServiceTest {
+class OrderServiceTest extends IntegrationTestSupport {
     @Autowired
     private ProductRepository productRepository;
     @Autowired

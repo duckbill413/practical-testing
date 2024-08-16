@@ -3,12 +3,8 @@ package wh.duckbill.cafekiosk.spring.api.service.order;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import wh.duckbill.cafekiosk.spring.client.MailSendClient;
+import wh.duckbill.cafekiosk.spring.IntegrationTestSupport;
 import wh.duckbill.cafekiosk.spring.client.MailSendHistory;
 import wh.duckbill.cafekiosk.spring.client.MailSendHistoryRepository;
 import wh.duckbill.cafekiosk.spring.domain.order.Order;
@@ -26,13 +22,12 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static wh.duckbill.cafekiosk.spring.domain.product.ProductSellingStatus.SELLING;
 import static wh.duckbill.cafekiosk.spring.domain.product.ProductType.HANDMADE;
 
 
-@ActiveProfiles("test")
-@SpringBootTest
-class OrderStatisticsServiceTest {
+class OrderStatisticsServiceTest extends IntegrationTestSupport {
     @Autowired
     private OrderStatisticsService orderStatisticsService;
     @Autowired
@@ -43,8 +38,6 @@ class OrderStatisticsServiceTest {
     private OrderProductRepository orderProductRepository;
     @Autowired
     private MailSendHistoryRepository mailSendHistoryRepository;
-    @MockBean
-    private MailSendClient mailSendClient;
 
     @AfterEach
     void tearDown() {
@@ -73,7 +66,7 @@ class OrderStatisticsServiceTest {
 
         // stubbing
         // Mock 객체에 원하는 행위를 정의
-        Mockito.when(mailSendClient.sendEmail(any(String.class), any(String.class), any(String.class), any(String.class)))
+        when(mailSendClient.sendEmail(any(String.class), any(String.class), any(String.class), any(String.class)))
                 .thenReturn(true);
         // when
         boolean result = orderStatisticsService.sendOrderStatisticsMail(LocalDate.of(2024, 8, 12), "test@test.com");

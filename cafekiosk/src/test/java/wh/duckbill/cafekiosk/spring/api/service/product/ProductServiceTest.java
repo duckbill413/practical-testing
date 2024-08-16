@@ -2,8 +2,7 @@ package wh.duckbill.cafekiosk.spring.api.service.product;
 
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import wh.duckbill.cafekiosk.spring.IntegrationTestSupport;
 import wh.duckbill.cafekiosk.spring.api.controller.product.dto.request.ProductCreateRequest;
 import wh.duckbill.cafekiosk.spring.api.service.product.response.ProductResponse;
 import wh.duckbill.cafekiosk.spring.domain.product.Product;
@@ -18,9 +17,7 @@ import static org.assertj.core.api.Assertions.tuple;
 import static wh.duckbill.cafekiosk.spring.domain.product.ProductSellingStatus.SELLING;
 import static wh.duckbill.cafekiosk.spring.domain.product.ProductType.HANDMADE;
 
-@ActiveProfiles("test")
-@SpringBootTest
-class ProductServiceTest {
+class ProductServiceTest extends IntegrationTestSupport {
     @Autowired
     private ProductService productService;
     @Autowired
