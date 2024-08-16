@@ -164,49 +164,56 @@ Hexagonal Architecture는 애플리케이션의 핵심 비즈니스 로직을 �
 # [섹션 #6] Mock 을 마주하는 자세
 
 ### Mockito Stubbing
-- Mock 을 이용하여 외부 통신이나 DB 연결 등의 작업을 수행  
+
+- Mock 을 이용하여 외부 통신이나 DB 연결 등의 작업을 수행
 - MockMvc의 `when` -> `thenReturn`
 - 외부와의 연결 없이도 테스트가 가능해 짐
 
 ### Test Double
-- **Dummy**
-  - 아무 것도 하지 않는 깡통 객체
-- **Fake**
-  - 단순한 형태로 동일한 기능은 수행하나, 프로덕션에서 쓰기에는 부족한 객체
-  - `FakeRepository`
-- **Stub**
-  - 테스트에서 요청한 것에 대해 미리 준비한 결과를 제공하는 객체 그 외에는 응답하지 않는다.
-- **Spy**
-  - Stub 이면서 호출된 내용을 기록하여 보여줄 수 있는 객체
-  - 일부는 실제 객체처럼 동작시키고 일부만 Stubbing 할 수 있다.
-- **Mock**
-  - 행위에 대한 기대를 명시하고, 그에 따라 동작하도록 만들어진 객체
 
-> Mock 과 Stub의 차이  
+- **Dummy**
+    - 아무 것도 하지 않는 깡통 객체
+- **Fake**
+    - 단순한 형태로 동일한 기능은 수행하나, 프로덕션에서 쓰기에는 부족한 객체
+    - `FakeRepository`
+- **Stub**
+    - 테스트에서 요청한 것에 대해 미리 준비한 결과를 제공하는 객체 그 외에는 응답하지 않는다.
+- **Spy**
+    - Stub 이면서 호출된 내용을 기록하여 보여줄 수 있는 객체
+    - 일부는 실제 객체처럼 동작시키고 일부만 Stubbing 할 수 있다.
+- **Mock**
+    - 행위에 대한 기대를 명시하고, 그에 따라 동작하도록 만들어진 객체
+
+> Mock 과 Stub의 차이
 > - [Test Double](https://martinfowler.com/articles/mocksArentStubs.html)
 > - Stub 같은 경우는 어떤 기능을 요청했을 떄 Stub 의 **상태를 기록 및 검증** 하는데 초점
 > - Mock 은 행위에 대해 검증을 중점
 
-
 ### @Mock, @Spy, @InjectMock
+
 - `@Mock`: `MailServiceMockTest`
 - `@Spy`: `MailServiceSpyTest`
 
 ### BDD Mockito
+
 - `MailServiceBDDMockitoTest`
 
 ### Classicist vs. Mockist
+
 - Classicist 는 최대한 기능을 Mock 하지말고 테스트를 하자는 주의
 - Mockist 는 이미 동작 테스트가 완료된 기능에 대해서는 Mock 을 사용해서 테스트
 
 # [섹션 #7] 더 나은 테스트를 작성하기 위한 구체적 조언
+
 ## @ParameterizedTest
+
 ![](https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests)
 
 - 매개변수화된 검정을 사용하면 서로 다른 검정을 여러 번 실행할 수 있습니다
 - Source 로는 `@CsvSource`와 `@MethodSource`가 많이 사용된다.
 
 ```java
+
 @DisplayName("상품 타입이 재고 관련 타입인지 체크한다.")
 @CsvSource({"HANDMADE, false", "BOTTLE, true", "BAKERY, true"})
 @ParameterizedTest
@@ -228,6 +235,7 @@ private static Stream<Arguments> provideProductTypesForCheckingStockType() {
 ```
 
 ```java
+
 @DisplayName("상품 타입이 재고 관련 타입인지를 확인한다.")
 @MethodSource("provideProductTypesForCheckingStockType")
 @ParameterizedTest
@@ -241,9 +249,11 @@ void containsStockType4(ProductType productType, boolean expected) {
 ```
 
 ## @DynamicTest
+
 - 단계별로 테스트하는 것이 유리할 때 사용할 수 있다.
 
 ```java
+
 @DisplayName("재고 차감 시나리오")
 @TestFactory
 Collection<DynamicTest> stockDeductionDynamicTest() {
@@ -275,12 +285,15 @@ Collection<DynamicTest> stockDeductionDynamicTest() {
 ```
 
 ## 환경 통합으로 테스트 비용 감소
+
 - 테스트 환경이 달라지면 Spring 은 서버를 재시작하게 된다.
 - 서버의 재시작은 곧 시간을 소모한다.
 - 불필요한 서버 재시작을 막기 위해서는 테스트 환경을 통합하는 것이 효과적이다.
 
 ### @SpringBootTest 의 통합
+
 ```java
+
 @ActiveProfiles("test")
 @SpringBootTest
 public abstract class IntegrationTestSupport {
@@ -288,15 +301,18 @@ public abstract class IntegrationTestSupport {
     protected MailSendClient mailSendClient;
 }
 ```
+
 - `@SpringBootTest` 를 사용하는 테스트의 환경을 통합
 - Mock 객체를 사용하는 `@MockBean` 객체 또한 서버 환경을 달라지게 하므로 통합
 - `@DataJpaTest` 는 `@Transaction` 어노테이션을 자동으로 지원하는 등의 장점이 있지만 `@SpringBootTest`는 `@DataJpaTest` 기능을 거의 대부분 포함한다.
 - 따라서, 테스트 환경의 통합을 위해서는 `@DataJpaTest`의 사용을 지양할 필요가 있다.
 
 ### @WebMvcTest 의 통합
+
 - `Controller` Test 를 위해 WebMvcTest 를 활용해 왔다.
 
 ```java
+
 @WebMvcTest(controllers = {
         OrderController.class,
         ProductController.class
@@ -312,5 +328,24 @@ public abstract class ControllerTestSupport {
     protected ProductService productService;
 }
 ```
+
 - WebMvcTest 의 Controller 가 사용하는 의존성을 공통으로 생성
 - 하위 클래스에서 사용하기 위해 `protected` 가 필수
+
+## 키워드 정리
+
+- 테스트 하나 당 목적은 하나!
+- 완벽한 제어
+    - 테스트 코드내에서의 LocalDateTime 의 사용 같은 경우를 피하자
+    - 정확한 시간을 지정 (test와 production 환경의 차이 발생 가능)
+- 테스트 환경의 독립성, 테스트 간 독립성
+- Test Fixture
+- `deleteAll`, `deleteAllInBatch`
+- `@ParameterizedTest`, `DynamicTest`
+- 수행 환경 통합
+- private method test
+  - 만들 필요가 없음
+  - 다른 production method 로 충분히 검증이 됨
+- 테스트에서만 필요한 코드
+  - 만들어도 되지만 충분한 근거를 갖자
+  - 예를 들면, 미래 시점에 충분히 사용될 수 있는 코드 (ex: `size()`)
