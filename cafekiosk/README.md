@@ -207,7 +207,7 @@ Hexagonal Architecture는 애플리케이션의 핵심 비즈니스 로직을 �
 
 ## @ParameterizedTest
 
-![](https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests)
+[](https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests)
 
 - 매개변수화된 검정을 사용하면 서로 다른 검정을 여러 번 실행할 수 있습니다
 - Source 로는 `@CsvSource`와 `@MethodSource`가 많이 사용된다.
@@ -344,8 +344,319 @@ public abstract class ControllerTestSupport {
 - `@ParameterizedTest`, `DynamicTest`
 - 수행 환경 통합
 - private method test
-  - 만들 필요가 없음
-  - 다른 production method 로 충분히 검증이 됨
+    - 만들 필요가 없음
+    - 다른 production method 로 충분히 검증이 됨
 - 테스트에서만 필요한 코드
-  - 만들어도 되지만 충분한 근거를 갖자
-  - 예를 들면, 미래 시점에 충분히 사용될 수 있는 코드 (ex: `size()`)
+    - 만들어도 되지만 충분한 근거를 갖자
+    - 예를 들면, 미래 시점에 충분히 사용될 수 있는 코드 (ex: `size()`)
+
+# [섹션 #8] Appendix
+
+## google/guava 라이브러리
+
+[](https://github.com/google/guava)
+
+- `Lists.partition`
+- `MultiMap`
+
+Test 코드를 활용하여 위와 같은 라이브러리를 학습할 수 있음
+
+## Spring REST Docs
+
+- 테스트 코드를 통한 API 문서 자동화 도구
+- API 명세를 문서로 만들고 외부에 제공함으로써 협업을 원활하게 한다.
+- 기본적으로 AsciiDoc 을 사용하여 문서를 작성한다.
+- **장점**
+    - 테스트를 통과해야 문서가 만들어진다. (신뢰도가 높다.)
+    - 프로덕션 코드에 비침투적이다.
+- **단점**
+    - 코드 양이 많다.
+    - 설정이 어렵다.
+
+### Swagger
+
+- **장점**
+    - 적용이 쉽다.
+    - 문서에서 바로 API 호출을 수행해볼 수 있다.
+- **단점**
+    - 프로덕션 코드에 침투적이다.
+    - 테스트와 무관하기 때문에 신뢰도가 떨어질 수 있다.
+
+### Rest Docs 실습
+
+[Asciidoctor](https://asciidoctor.org/)
+[Spring Rest Doc](https://docs.spring.io/spring-restdocs/docs/current/reference/htmlsingle/)
+
+- Intellij Plugin 설치
+  ![img.png](images/asciidoctor-plugin.png)
+    - **AsciiDoc** 이라는 Plugin 설치
+    - AsciiDoc 문서의 미리보기
+
+1. `build.gradle` plugin에 Asciidoctor plugin 추가
+    ```
+    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+    ```
+2. `build.gradle` configurations 에 `asciidoctorExt` 추가
+    ```
+    configurations {
+        compileOnly {
+            extendsFrom annotationProcessor
+        }
+        asciidoctorExt
+    }
+    ```
+3. 전역 변수
+    ```
+    ext {
+       snippetsDir = file('build/generated-snippets') // snippet 의 dir 정의
+    }
+    ```
+
+4. 테스트 결과물을 snippetsDir 로 저장
+    ```
+    test {
+       outputs.dir snippetsDir
+    }
+    ```
+
+5. asciidoctor 를 test 수행후 실행(문서 생성)되도록 지정
+    ```
+    asciidoctor {
+        inputs.dir snippetsDir
+        configurations 'asciidoctorExt'
+        
+        dependsOn test
+    }
+    ```
+
+6. 문서를 정적파일로 보기 위해 static 폴더로 복사하는 작업
+    ```
+    bootJar {
+        dependsOn asciidoctor
+        from("${asciidoctor.outputDir}") {
+            into 'static/docs'
+        }
+    }
+    ```
+7. RestDoc 작성을 위한 Support Class 생성
+    ```java
+    @ExtendWith(RestDocumentationExtension.class)
+    public abstract class RestDocsSupport {
+        protected MockMvc mockMvc;
+    
+        @BeforeEach
+        void setUp(RestDocumentationContextProvider provider) {
+            this.mockMvc = MockMvcBuilders.standaloneSetup(initController())
+                    .apply(MockMvcRestDocumentation.documentationConfiguration(provider))
+                    .build();
+        }
+    
+        protected abstract Object initController();
+    }
+    ```
+    - `initController` 메서들 통해 하위 `Controller` Test Class 로 부터 Controller 를 주입
+    - `@SpringBootTest` 를 사용하고 `WebApplicationContext` 를 주입받아서 생성할 수도 있음
+      ```java
+       @ExtendWith(RestDocumentationExtension.class)
+       @SpringBootTest
+       public abstract class RestDocsSupport {
+       protected MockMvc mockMvc;
+       
+           @BeforeEach
+           void setUp(WebApplicationContext webApplicationContext,
+                      RestDocumentationContextProvider provider) {
+               this.mockMvc = MockMvcBuilders.standaloneSetup(webApplicationContext)
+                       .apply(MockMvcRestDocumentation.documentationConfiguration(provider))
+                       .build();
+           }
+       }
+      ```
+        - 하지만 위의 방법을 사용할 경우 `RestDoc` 생성을 위해 서버가 재시작 됨
+
+8. RestDoc 작성을 위한 Controller Test Class 작성
+    ```java
+    public class ProductControllerDocsTest extends RestDocsSupport {
+        private final ProductService productService = mock(ProductService.class);
+        @Override
+        protected Object initController() {
+            return new ProductController(productService);
+        }
+    }
+    ```
+   - `bean` 객체는 `mock` 을 이용하여 생성
+9. `ProductControllerDocsTest` 클래스 완성하기
+```java
+public class ProductControllerDocsTest extends RestDocsSupport {
+    private final ProductService productService = mock(ProductService.class);
+
+    @Override
+    protected Object initController() {
+        return new ProductController(productService);
+    }
+
+    @DisplayName("신규 상품을 등록하는 API")
+    @Test
+    void createProduct() throws Exception {
+        ProductCreateRequest request = ProductCreateRequest.builder()
+                .type(ProductType.HANDMADE)
+                .sellingStatus(ProductSellingStatus.SELLING)
+                .name("아메리카노")
+                .price(4000)
+                .build();
+
+        given(productService.createProduct(any(ProductCreateServiceRequest.class)))
+                .willReturn(ProductResponse.builder()
+                        .id(1L)
+                        .productNumber("001")
+                        .type(ProductType.BOTTLE)
+                        .sellingStatus(ProductSellingStatus.SELLING)
+                        .name("아메리카노")
+                        .price(4000)
+                        .build());
+
+        mockMvc.perform(post("/api/v1/products/new")
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                // RestDoc 문서 작성부
+                .andDo(document("product-create",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath("type").type(JsonFieldType.STRING).description("상품 타입"),
+                                fieldWithPath("sellingStatus").type(JsonFieldType.STRING).optional().description("상품 판매 상태"),
+                                fieldWithPath("name").type(JsonFieldType.STRING).description("상품 이름"),
+                                fieldWithPath("price").type(JsonFieldType.NUMBER).description("상품 가격")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").type(JsonFieldType.NUMBER).description("코드"),
+                                fieldWithPath("status").type(JsonFieldType.STRING).description("상태"),
+                                fieldWithPath("message").type(JsonFieldType.STRING).description("메시지"),
+                                fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
+                                fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("상품 ID"),
+                                fieldWithPath("data.productNumber").type(JsonFieldType.STRING).description("상품 번호"),
+                                fieldWithPath("data.type").type(JsonFieldType.STRING).description("상품 타입"),
+                                fieldWithPath("data.sellingStatus").type(JsonFieldType.STRING).description("상품 판매 상태"),
+                                fieldWithPath("data.name").type(JsonFieldType.STRING).description("상품 이름"),
+                                fieldWithPath("data.price").type(JsonFieldType.NUMBER).description("상품 가격")
+                        )));
+    }
+}
+
+```
+- 테스트 코드 작성은 일반적인 `WebMvcTest`와 다르지 않다.
+- `productService`는 Mock 객체이므로 `createProduct`의 Reponse 를 BDDMock 으로 생성
+- 테스트의 `then` 절에 해당하는 부분의 마지막에 `andDo` 라는 부분부터 `RestDoc` 을 작성하는 부분
+- `document`: 해당하는 Test 의 `id`
+- `preprocessRequest(prettyPrint())`, `preprocessResponse(prettyPrint())`: `json` 을 예쁘게 표시
+- `requestFields`, `responseFields`: Request, Response 로 오는 객체를 정의
+  - `fieldWithPath`: 객체의 하위 파라미터들을 정의
+  - `type`, `optional`, `description` 을 정의할 수 있다.
+  - `object` 내의 하위 파라미터들은 `obj-name.param` 형식으로 생성하면 된다.
+
+10. 테스트를 실행하고 `build/generated-snippets` 를 보면 파일들이 생성된 것을 볼 수 있다.
+11. 프로젝트의 `src` 폴더 밑에 `src/docs/asciidoc` 위치에 `index.adoc` 을 생성
+    ```asciidoc
+    ifndef::snippets[]
+    :snippets: ../../build/generated-snippets
+    endif::[]
+    = CafeKiosk REST API 문서
+    :doctype: book
+    :icons: font
+    :source-highlighter: highlightjs
+    :toc: left
+    :toclevels: 2
+    :sectlinks:
+    
+    [[product-create]]
+    === 신규 상품 등록
+    
+    ==== HTTP Request
+    include::{snippets}/product-create/http-request.adoc[]
+    include::{snippets}/product-create/request-fields.adoc[]
+    
+    ==== HTTP Response
+    include::{snippets}/product-create/http-response.adoc[]
+    include::{snippets}/product-create/response-fields.adoc[]
+    ```
+    으로 `asciidoc` 을 생성
+12. gradle -> documentation -> asciidoctor 을 실행
+13. `build/docs/asciidoc` 에 `index.html` 을 보면 RestDoc 문서가 생성된 것을 볼 수 있다.
+14. 서버 실행해 보기
+- `./gradlew build` 로 서버 빌드
+- `build/libs`의 실행 파일을 실행
+- `java -jar ***.jar` 로 서버를 실행
+- `http://localhost:8080/docs/index.html` 접속으로 문서를 확인
+
+### RestDoc 개선
+1. RestDoc 커스텀
+- 위의 RestDoc 문서를 만드는 부분의 `fieldWithPath` 옵션에는 `optional()` 이라는 메서드가 존재한다.
+- 하지만 생성된 문서를 보면 optional 에 대한 부분은 확인이 어렵다 이런 것을 개선하고 또 원하는 대로 문서를 커스텀할 수 있다.
+- `test/resources/org/springframework/restdocs/templates` 경로로 디렉토리를 생성한다.
+- 하위에 `request-fields.snippet` 과 `response-fields.snippet` 폴더를 생성하고
+    ```asciidoc
+    ==== Response Fields
+    |===
+    |Path|Type|Optional|Description
+    
+    {{#fields}}
+    
+    |{{#tableCellContent}}`+{{path}}+`{{/tableCellContent}}
+    |{{#tableCellContent}}`+{{type}}+`{{/tableCellContent}}
+    |{{#tableCellContent}}{{#optional}}O{{/optional}}{{/tableCellContent}}
+    |{{#tableCellContent}}{{description}}{{/tableCellContent}}
+    
+    {{/fields}}
+    
+    |===
+    ```
+    - 위와 같이 RestDoc 을 커스텀할 수 있다.
+
+2. `asciidoc` 문서 분리하기
+- 문서의 가독성을 위해 분리하여 작성하는 것이 좋다.
+- `src/docs/asciidoc/index.adoc` 의 파일을 아래와 같이 변경
+    ```asciidoc
+    ifndef::snippets[]
+    :snippets: ../../build/generated-snippets
+    endif::[]
+    = CafeKiosk REST API 문서
+    :doctype: book
+    :icons: font
+    :source-highlighter: highlightjs
+    :toc: left
+    :toclevels: 2
+    :sectlinks:
+    
+    [[Product-API]]
+    == Product API
+    
+    include::api/product/product.adoc[]
+    ```
+- `asciidoc` 하위에 `api/product` 디렉토리를 생성하고 `product.adoc` 문서를 생성
+    ```asciidoc
+    [[product-create]]
+    === 신규 상품 등록
+    
+    ==== HTTP Request
+    include::{snippets}/product-create/http-request.adoc[]
+    include::{snippets}/product-create/request-fields.adoc[]
+    
+    ==== HTTP Response
+    include::{snippets}/product-create/http-response.adoc[]
+    include::{snippets}/product-create/response-fields.adoc[]
+    ```
+- `build.gradle` 수정
+    ```
+    asciidoctor {
+        inputs.dir snippetsDir
+        configurations 'asciidoctorExt'
+    
+        sources { // 특정 파일만 html 로 만든다.
+            include("**/index.adoc")
+        }
+        baseDirFollowsSourceFile() // 다른 ado 파일을 include 할 때 경로를 baseDir 로 맞춘다.
+        dependsOn test
+    }
+    ```
